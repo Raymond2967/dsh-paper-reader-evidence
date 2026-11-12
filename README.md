@@ -1,35 +1,75 @@
-# dsh-paper-reader-evidence
+<p align="center">
+  <img src="assets/hero.svg" alt="Paper Evidence Reader — every claim, back to the page" width="100%"/>
+</p>
 
-DeepSeek Harness 的论文阅读插件：在原生 PDF 阅读器旁边提问，答案里的名称、数字和图上标签可以直接点击回原文并框选；每条答案下方还有可展开的「查证过程」。
+<p align="center">
+  <a href="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml/badge.svg"/></a>
+  <img alt="version" src="https://img.shields.io/badge/version-1.1.4-0f766e"/>
+  <img alt="DeepSeek Harness" src="https://img.shields.io/badge/DeepSeek%20Harness-0.2.x-1d4ed8"/>
+  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-64748b"/></a>
+</p>
 
-基于 [`@ggboy123/dsh-paper-reader`](https://github.com/GGboya/dsh-paper-reader) v1.12.0（MIT）扩展，保留原文献库、PDF 阅读器、翻译、笔记和伴读能力。
+<h1 align="center">dsh-paper-reader-evidence</h1>
 
-## 功能
+<p align="center"><strong>让论文问答里的每一条结论，都能点回 PDF 原文的那一行、那张表或那幅图。</strong></p>
 
-- **PDF 阅读器**：文献库、连续滚动/翻页、缩放、搜索、笔记、翻译。
-- **证据引用**：文本层、OCR 标签、整张表格和整幅图都有页码、原文和归一化坐标；点击答案中的链接，阅读器跳页并画框。
-- **查证过程**：默认折叠；展开后按时间显示工具处理过的页、实际检索词、返回的证据、最终引用和额外读取。只记录本插件工具，模型内部思考不进入记录。
-- **当前论文上下文**：论文会话通过 `dpr-...` 会话 ID 绑定论文，系统上下文会明确告诉模型“这篇文章”是哪一篇，不需要先猜目录或列文献。
-- **工作区按专题**：同一专题只建一个 Harness 工作区，不再每上传一篇论文就多一项；工作区标题会作为该专题在论文伴读树里的显示名（重命名工作区后刷新/切回窗口即可看到）。需要旧行为可在 profile 配置 `workspaceScope: paper`。
-- **失败如实显示**：空结果、失败、无坐标（「仅定位到页」）都会明确标注。
+它不是只给一个“第 14 页”，而是给一条可核对的证据：**证据 ID + PDF 页码 + 原文 + 归一化坐标**。点击答案里的引用，阅读器跳到对应页并画出证据框；每条答案下方还有可展开的「查证过程」。
 
-## 环境
+> 基于 [`@ggboy123/dsh-paper-reader`](https://github.com/GGboya/dsh-paper-reader) v1.12.0（MIT）扩展。文献库、PDF 阅读器、翻译、笔记和伴读能力保留，新增证据索引、可点击引用和查证过程。
 
-- DeepSeek Harness `0.2.2-rc.1` 或兼容的 0.2.x。
-- Node.js `^22.19.0 || >=24`（由 Harness 提供）。
-- 普通文本层 PDF 不依赖额外组件。
-- **图上标签/扫描件 OCR**：Windows + 简体中文 OCR 语言包。
-- **坐标索引**：Python 3.11+ 与 `pymupdf`；缺依赖时仍可转录和按页跳转，但只能「仅定位到页」。
+## 为什么
+
+普通 PDF 问答通常只给页码。读者还要自己翻页、找表头、确认是哪一行——这不算真正可溯源。
+
+| 普通回答 | Paper Evidence Reader |
+| --- | --- |
+| “Table 3 显示 Drop 最贵（第 14 页）” | 点击 **Table 3** → 跳到 p14，框住表题 + 整张表 |
+| “Keep 最差 2.50×（第 14 页）” | 点击 **2.50×** → 框住对应表格行/单元格 |
+| “Figure 2 说明 churn 的影响” | 点击 **Figure 2** → 框住整幅图 + 图注 |
+| 读者自己核对 | 展开「查证过程」：查了哪些页、搜了什么、返回哪些证据、最终引用了哪些 |
+
+## 核心能力
+
+- **可点击证据**：正文行、OCR 标签、整张表、整幅图都可绑定证据 ID。
+- **框选跟随缩放**：坐标归一化到 0–1；缩放、翻页、重渲染后按实际 PDF 画布重新定位。
+- **整表 / 整图**：`Table N:` 和 `Figure N:` 会生成整块证据，而不是只框一个数字。
+- **查证过程**：默认折叠；展开后显示工具处理过的页、检索词、返回证据、最终引用、额外读取和失败/空结果。
+- **当前论文上下文**：论文会话通过 `dpr-...` 会话 ID 绑定论文，模型不需要猜“这篇文章”是哪篇。
+- **工作区按专题**：同一专题共用一个 Harness 工作区；工作区标题会作为文献树里的专题别名。
+- **如实降级**：没有可靠坐标就跳到对应页并明确显示「仅定位到页」，不伪造 bbox。
+
+## 工作方式
+
+```text
+PDF
+ ├─ 文本层 ─────────────┐
+ ├─ OCR（可选）─────────┤
+ └─ 表格/图版面检测 ────┤
+                       ▼
+              证据索引：id / page / text / bbox
+                       │
+用户提问 ──► 模型检索证据 ──► 带 page + ev 的引用 URL
+                       │
+                       ▼
+              阅读器跳页 + 按 bbox 画框
+                       │
+                       ▼
+              答案下方「查证过程」
+```
+
+模型不计算坐标，也不画框。它只负责从工具结果里选择证据、复制带 `page` 和 `ev` 的链接；坐标查询和画框由插件完成。
 
 ## 安装
 
-### 从 npm（发布后）
+### 从源码
 
 ```bash
-dsh plugin --profile web add dsh-paper-reader-evidence
+git clone https://github.com/Raymond2967/dsh-paper-reader-evidence.git
+cd dsh-paper-reader-evidence
+pnpm install
+pnpm run build
+dsh plugin --profile web add .
 ```
-
-或在桌面端「插件 → 添加插件」里输入包名。
 
 ### 从本地包
 
@@ -37,54 +77,84 @@ dsh plugin --profile web add dsh-paper-reader-evidence
 dsh plugin --profile web add /path/to/dsh-paper-reader-evidence
 ```
 
-桌面端也可以把打包后的 `.tgz` 交给插件管理器安装。
+桌面端也可以在「插件 → 添加插件」中安装打包后的 `.tgz`。
 
-### 从源码
+### 从 npm（发布后）
 
 ```bash
-pnpm install
-pnpm run build
+dsh plugin --profile web add dsh-paper-reader-evidence
 ```
 
 ## 使用
 
-1. 打开侧栏底部的「📚 论文伴读」。
-2. 新建专题并上传 PDF，或把 PDF 放入 `<dataDir>/<专题>/<文献名>/<文献名>.pdf`。
+1. 侧栏底部打开 **📚 论文伴读**。
+2. 新建专题并上传 PDF，或把 PDF 放到 `<dataDir>/<专题>/<文献名>/<文献名>.pdf`。
 3. 点论文打开阅读器，在右侧原生对话里提问。
-4. 答案中的工坊/设备/图表标签和「总数」句都是可点击证据链接。
-5. 点击链接：跳页并框选；缩放后框仍按百分比对齐。
-6. 展开答案底部的「查过 P…，取回…条证据，最终引用…处」，查看检索词、扫描页、返回证据和最终引用。
+4. 点击答案中的证据链接：阅读器跳页并框选；缩放后框仍对齐。
+5. 展开答案底部的「查过 P…，取回…条证据，最终引用…处」。
 
-示例问题：`我们有哪些工坊？`
+示例问题：
 
-## 数据与缓存
+```text
+这篇论文的核心贡献是什么？
+Table 3 的实验结果说明了什么？
+Figure 2 的趋势怎么解释？
+作者为什么认为 Keep 策略不够？
+这篇论文和同类方法的关键区别是什么？
+```
 
-- 文献库默认 `~/.dsh-paper-reader/data`，可在 profile 里配置 `dataDir`。
-- 证据索引：`<文献>.evidence.json`，与 PDF 同目录。
-- OCR 页图缓存：`.evidence-cache/`（隐藏目录）。
-- 工具审计：`<dataDir>/.paper-reader/audit/<sessionId>.jsonl`，按会话和 turn 记录。
-- 所有 OCR/索引都在本机完成；插件不会把 PDF 发到外部服务。
+问整张表/整幅图时，模型会优先引用整块证据；只问单个数值时，引用行级/单元格证据。
 
-## 已知限制
+## 环境与依赖
 
-- 证据框以**行级/标签级**为主，另有**整表/整图**块；跨行句子仍只框命中那一行。整表/整图依赖 PDF 版面与 `Table N:` / `Figure N:` 标题，多页表通常只框当前页。
-- OCR 依赖 Windows 简体中文语言包；其他平台只能使用文本层。
-- 没有可靠坐标时退回页码，并显示「仅定位到页」。
-- 查证过程只覆盖本插件 PDF 工具，不记录其他工具或模型内部思考。
+- DeepSeek Harness `0.2.x`（当前验证 `0.2.2-rc.1`）
+- Node.js `^22.19.0 || >=24`（由 Harness 提供）
+- 普通文本层 PDF：开箱即用
+- **OCR 标签**：Windows + 简体中文 OCR 语言包
+- **坐标索引**：Python 3.11+ 与 `pymupdf`
+
+缺少 OCR/Python 时，阅读器仍可转录、检索和按页跳转，但图片上的标签只能「仅定位到页」。
+
+## 数据与隐私
+
+- 文献库默认 `~/.dsh-paper-reader/data`
+- 证据索引：`<文献>.evidence.json`
+- OCR 页图缓存：`.evidence-cache/`
+- 工具审计：`<dataDir>/.paper-reader/audit/<sessionId>.jsonl`
+- OCR、版面检测和索引全部在本机完成；插件不会上传 PDF。
+
+## 配置
+
+在 profile 的 `cordis.patch.yml` 中可以设置：
+
+```yaml
+- id: dsh-paper-reader-evidence
+  name: dsh-paper-reader-evidence
+  config:
+    dataDir: 'D:\papers'
+    # topic（默认）= 一个专题一个工作区；paper = 旧的一篇论文一个工作区
+    workspaceScope: topic
+```
+
+## 已知边界
+
+- 普通证据以**行级/标签级**为主；跨行句子只框命中那一行。
+- 整表/整图依赖 PDF 版面和 `Table N:` / `Figure N:` 标题；无边框表、无图注的图可能退化为行级证据。
+- 多页表通常只框当前页。
+- OCR 依赖 Windows 简体中文语言包。
+- 查证过程只记录本插件 PDF 工具，不记录模型内部思考或其他工具。
 - 没有工具调用的回答不会显示过程面板。
 
 ## 开发
 
 ```bash
 pnpm install
-pnpm run build
 pnpm run typecheck
+pnpm run build
 ```
 
-`reader/` 和 `lib/` 是静态资源，`src/` 由 TypeScript 编译到 `dist/`。修改后重新构建并重启 Harness profile。
+`src/` 是 TypeScript 源码；`lib/`、`reader/`、`runtime/` 是运行时静态资源。构建后重启 Harness profile 生效。
 
 ## License
 
-MIT。原始项目版权归 GGboya；本扩展的修改部分归 Wang。详见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
-
-
+MIT。原始项目版权归 GGboya；本扩展的修改部分归 Raymond。详见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
