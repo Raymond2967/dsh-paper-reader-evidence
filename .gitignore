@@ -1,0 +1,20 @@
+node_modules/
+dist/
+*.tgz
+*.log
+.lflow/
+.DS_Store
+.probe/
+
+# Local development / acceptance artifacts (not part of the public package)
+dev/
+docs/
+test/
+examples/
+scripts/
+AGENTS.md
+TODO.md
+screenshots.json
+README-EVIDENCE.md
+__pycache__/
+*.pyc
