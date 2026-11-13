@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <a href="README.md">English</a> · <strong>简体中文</strong>
 </p>
 
@@ -12,6 +12,8 @@
   <a href="https://github.com/deepseek-ai/deepseek-harness"><img alt="DeepSeek Harness 0.2.x" src="https://img.shields.io/badge/DeepSeek%20Harness-0.2.x-1d4ed8"/></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-64748b"/></a>
 </p>
+
+<p align="center"><sub>CI = GitHub Actions 构建状态 · release = 插件版本 · harness = 运行时兼容 · MIT = 开源许可证</sub></p>
 
 <h1 align="center">dsh-paper-reader-evidence</h1>
 
