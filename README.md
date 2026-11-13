@@ -19,7 +19,7 @@
 
 <p align="center"><strong>Every claim in a paper answer links back to the exact line, table, or figure in the PDF.</strong></p>
 
-This is not just a page number. Each citation carries an evidence ID, page, source text, and normalized box. Click it and the reader jumps to the page and draws the box; every answer also has an expandable verification trail.
+Page numbers only tell you where to start looking. This plugin shows you exactly where an answer came from: the passage, table, or figure it used, with the page and its position on that page. Click a citation and the reader jumps there and outlines the source. Each answer also includes a verification trail you can open to see the searches, pages, and evidence behind it.
 
 > Built on [`@ggboy123/dsh-paper-reader`](https://github.com/GGboya/dsh-paper-reader) v1.12.0 (MIT). The library, reader, translation, notes, and study coach remain; evidence indexing, clickable citations, and the verification panel are new.
 
