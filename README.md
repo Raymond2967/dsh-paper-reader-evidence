@@ -34,40 +34,41 @@ A page number still makes the reader hunt for the right table header or sentence
 | “Figure 2 explains the churn effect” | Click **Figure 2** → box the figure + caption |
 | Reader checks it manually | Expand **Verification**: pages scanned, queries, returned evidence, final citations |
 
-## Highlights
+## What you get
 
-- **Clickable evidence**: body lines, OCR labels, whole tables, and whole figures can all carry an evidence ID.
-- **Zoom-stable boxes**: coordinates are normalized to 0–1 and re-projected onto the actual rendered canvas after zoom, page changes, or re-render.
-- **Whole table / whole figure**: `Table N:` and `Figure N:` produce object-level evidence, not a single number.
-- **Verification trail**: collapsed by default; shows indexed pages, search terms, returned evidence, final citations, extra reads, failures, and empty results.
-- **Current-paper context**: a paper session is bound to a paper via its `dpr-...` session ID, so the model does not guess which paper “this paper” means.
-- **Topic-scoped workspaces**: one Harness workspace per topic; the workspace title becomes the topic alias in the paper tree.
-- **Honest fallbacks**: no reliable box means a page jump with an explicit “page only” notice; no fake coordinates.
+- **Click any citation** — a line, an OCR label, a whole table, or a whole figure.
+- **Whole objects when they matter** — `Table 3` and `Figure 2` are boxed as objects, not as one number.
+- **A proof trail** — expand the answer to see the pages scanned, evidence returned, and citations used.
+- **Boxes that stay put** — zoom, scroll, or re-render the PDF and the box follows the actual page canvas.
 
 ## How it works
 
-```text
-PDF
- ├─ text layer ───────────┐
- ├─ OCR (optional) ───────┤
- └─ table/figure layout ──┤
-                         ▼
-              evidence index: id / page / text / bbox
-                         │
-question ──► model retrieves evidence ──► citation URL with page + ev
-                         │
-                         ▼
-              reader jumps and draws the box
-                         │
-                         ▼
-              verification trail under the answer
-```
+<p align="center">
+  <img src="assets/how-it-works.svg" alt="PDF sources become an evidence index; the model cites it; the reader draws the box" width="100%"/>
+</p>
 
-The model does not compute coordinates or draw boxes. It selects evidence from tool results and copies the `page` + `ev` URL; the plugin resolves the box and renders it.
+The model chooses which evidence to cite. The plugin resolves the page and draws the box. No coordinates are guessed by the model.
 
 ## Install
 
-### From source
+### DeepSeek Harness Desktop (after the npm release)
+
+1. Open **Plugins → Add plugin**.
+2. Paste `dsh-paper-reader-evidence`.
+3. Enable it and restart Harness.
+
+No clone, no build. The npm package is not published yet; until then use the local option below.
+
+### CLI
+
+```bash
+dsh plugin --profile web add dsh-paper-reader-evidence
+```
+
+### From this repository (works today)
+
+<details>
+<summary>Build from source (developers)</summary>
 
 ```bash
 git clone https://github.com/Raymond2967/dsh-paper-reader-evidence.git
@@ -77,19 +78,9 @@ pnpm run build
 dsh plugin --profile web add .
 ```
 
-### From a local package
+You can also build a `.tgz` and install it through the desktop plugin manager.
 
-```bash
-dsh plugin --profile web add /path/to/dsh-paper-reader-evidence
-```
-
-The desktop app can also install a packed `.tgz` through its plugin manager.
-
-### From npm (after release)
-
-```bash
-dsh plugin --profile web add dsh-paper-reader-evidence
-```
+</details>
 
 ## Use
 

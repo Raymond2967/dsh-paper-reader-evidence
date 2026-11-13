@@ -34,40 +34,41 @@
 | “Figure 2 说明 churn 的影响” | 点击 **Figure 2** → 框住整幅图 + 图注 |
 | 读者自己核对 | 展开「查证过程」：查了哪些页、搜了什么、返回哪些证据、最终引用了哪些 |
 
-## 核心能力
+## 你会得到什么
 
-- **可点击证据**：正文行、OCR 标签、整张表、整幅图都可绑定证据 ID。
-- **框选跟随缩放**：坐标归一化到 0–1；缩放、翻页、重渲染后按实际 PDF 画布重新定位。
-- **整表 / 整图**：`Table N:` 和 `Figure N:` 会生成整块证据，而不是只框一个数字。
-- **查证过程**：默认折叠；展开后显示工具处理过的页、检索词、返回证据、最终引用、额外读取和失败/空结果。
-- **当前论文上下文**：论文会话通过 `dpr-...` 会话 ID 绑定论文，模型不需要猜“这篇文章”是哪篇。
-- **工作区按专题**：同一专题共用一个 Harness 工作区；工作区标题会作为文献树里的专题别名。
-- **如实降级**：没有可靠坐标就跳到对应页并明确显示「仅定位到页」，不伪造 bbox。
+- **引用可点击**：正文行、OCR 标签、整张表、整幅图都可以点回原文。
+- **该整块就整块**：问 `Table 3` / `Figure 2` 时框住整个对象，而不是只框一个数字。
+- **查证过程**：展开答案，就能看到查过哪些页、返回哪些证据、最终引用了哪些。
+- **缩放不跑偏**：缩放、滚动、重渲染后，框始终贴着实际 PDF 页面。
 
 ## 工作方式
 
-```text
-PDF
- ├─ 文本层 ─────────────┐
- ├─ OCR（可选）─────────┤
- └─ 表格/图版面检测 ────┤
-                       ▼
-              证据索引：id / page / text / bbox
-                       │
-用户提问 ──► 模型检索证据 ──► 带 page + ev 的引用 URL
-                       │
-                       ▼
-              阅读器跳页 + 按 bbox 画框
-                       │
-                       ▼
-              答案下方「查证过程」
-```
+<p align="center">
+  <img src="assets/how-it-works.svg" alt="PDF 内容变成证据索引，模型引用证据，阅读器画出证据框" width="100%"/>
+</p>
 
-模型不计算坐标，也不画框。它只负责从工具结果里选择证据、复制带 `page` 和 `ev` 的链接；坐标查询和画框由插件完成。
+模型只负责选择证据；页码和坐标由插件解析，框由阅读器绘制。模型不会猜坐标。
 
 ## 安装
 
-### 从源码
+### DeepSeek Harness 桌面端（npm 发布后）
+
+1. 打开 **插件 → 添加插件**。
+2. 粘贴 `dsh-paper-reader-evidence`。
+3. 启用并重启 Harness。
+
+不用克隆、不用构建。npm 包目前还没发布；在那之前用下面的本地方式。
+
+### 命令行
+
+```bash
+dsh plugin --profile web add dsh-paper-reader-evidence
+```
+
+### 从当前仓库安装（现在可用）
+
+<details>
+<summary>从源码构建（开发者）</summary>
 
 ```bash
 git clone https://github.com/Raymond2967/dsh-paper-reader-evidence.git
@@ -77,19 +78,9 @@ pnpm run build
 dsh plugin --profile web add .
 ```
 
-### 从本地包
+也可以构建 `.tgz`，通过桌面端插件管理器安装。
 
-```bash
-dsh plugin --profile web add /path/to/dsh-paper-reader-evidence
-```
-
-桌面端也可以在「插件 → 添加插件」中安装打包后的 `.tgz`。
-
-### 从 npm（发布后）
-
-```bash
-dsh plugin --profile web add dsh-paper-reader-evidence
-```
+</details>
 
 ## 使用
 
