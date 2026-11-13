@@ -1,67 +1,71 @@
+﻿<p align="center">
+  <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a>
+</p>
+
 <p align="center">
   <img src="assets/hero.svg" alt="Paper Evidence Reader — every claim, back to the page" width="100%"/>
 </p>
 
 <p align="center">
   <a href="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml/badge.svg"/></a>
-  <img alt="version" src="https://img.shields.io/badge/version-1.1.4-0f766e"/>
-  <img alt="DeepSeek Harness" src="https://img.shields.io/badge/DeepSeek%20Harness-0.2.x-1d4ed8"/>
+  <a href="https://github.com/Raymond2967/dsh-paper-reader-evidence/releases/tag/v1.1.4"><img alt="release 1.1.4" src="https://img.shields.io/badge/release-1.1.4-0f766e"/></a>
+  <a href="https://github.com/deepseek-ai/deepseek-harness"><img alt="DeepSeek Harness 0.2.x" src="https://img.shields.io/badge/DeepSeek%20Harness-0.2.x-1d4ed8"/></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-64748b"/></a>
 </p>
 
 <h1 align="center">dsh-paper-reader-evidence</h1>
 
-<p align="center"><strong>让论文问答里的每一条结论，都能点回 PDF 原文的那一行、那张表或那幅图。</strong></p>
+<p align="center"><strong>Every claim in a paper answer links back to the exact line, table, or figure in the PDF.</strong></p>
 
-它不是只给一个“第 14 页”，而是给一条可核对的证据：**证据 ID + PDF 页码 + 原文 + 归一化坐标**。点击答案里的引用，阅读器跳到对应页并画出证据框；每条答案下方还有可展开的「查证过程」。
+This is not just a page number. Each citation carries an evidence ID, page, source text, and normalized box. Click it and the reader jumps to the page and draws the box; every answer also has an expandable verification trail.
 
-> 基于 [`@ggboy123/dsh-paper-reader`](https://github.com/GGboya/dsh-paper-reader) v1.12.0（MIT）扩展。文献库、PDF 阅读器、翻译、笔记和伴读能力保留，新增证据索引、可点击引用和查证过程。
+> Built on [`@ggboy123/dsh-paper-reader`](https://github.com/GGboya/dsh-paper-reader) v1.12.0 (MIT). The library, reader, translation, notes, and study coach remain; evidence indexing, clickable citations, and the verification panel are new.
 
-## 为什么
+## Why
 
-普通 PDF 问答通常只给页码。读者还要自己翻页、找表头、确认是哪一行——这不算真正可溯源。
+A page number still makes the reader hunt for the right table header or sentence. That is not traceable.
 
-| 普通回答 | Paper Evidence Reader |
+| Ordinary answer | Paper Evidence Reader |
 | --- | --- |
-| “Table 3 显示 Drop 最贵（第 14 页）” | 点击 **Table 3** → 跳到 p14，框住表题 + 整张表 |
-| “Keep 最差 2.50×（第 14 页）” | 点击 **2.50×** → 框住对应表格行/单元格 |
-| “Figure 2 说明 churn 的影响” | 点击 **Figure 2** → 框住整幅图 + 图注 |
-| 读者自己核对 | 展开「查证过程」：查了哪些页、搜了什么、返回哪些证据、最终引用了哪些 |
+| “Table 3 shows Drop is the most expensive (p. 14)” | Click **Table 3** → jump to p14 and box the caption + whole table |
+| “Keep has a 2.50× worst case (p. 14)” | Click **2.50×** → box the matching table row/cell |
+| “Figure 2 explains the churn effect” | Click **Figure 2** → box the figure + caption |
+| Reader checks it manually | Expand **Verification**: pages scanned, queries, returned evidence, final citations |
 
-## 核心能力
+## Highlights
 
-- **可点击证据**：正文行、OCR 标签、整张表、整幅图都可绑定证据 ID。
-- **框选跟随缩放**：坐标归一化到 0–1；缩放、翻页、重渲染后按实际 PDF 画布重新定位。
-- **整表 / 整图**：`Table N:` 和 `Figure N:` 会生成整块证据，而不是只框一个数字。
-- **查证过程**：默认折叠；展开后显示工具处理过的页、检索词、返回证据、最终引用、额外读取和失败/空结果。
-- **当前论文上下文**：论文会话通过 `dpr-...` 会话 ID 绑定论文，模型不需要猜“这篇文章”是哪篇。
-- **工作区按专题**：同一专题共用一个 Harness 工作区；工作区标题会作为文献树里的专题别名。
-- **如实降级**：没有可靠坐标就跳到对应页并明确显示「仅定位到页」，不伪造 bbox。
+- **Clickable evidence**: body lines, OCR labels, whole tables, and whole figures can all carry an evidence ID.
+- **Zoom-stable boxes**: coordinates are normalized to 0–1 and re-projected onto the actual rendered canvas after zoom, page changes, or re-render.
+- **Whole table / whole figure**: `Table N:` and `Figure N:` produce object-level evidence, not a single number.
+- **Verification trail**: collapsed by default; shows indexed pages, search terms, returned evidence, final citations, extra reads, failures, and empty results.
+- **Current-paper context**: a paper session is bound to a paper via its `dpr-...` session ID, so the model does not guess which paper “this paper” means.
+- **Topic-scoped workspaces**: one Harness workspace per topic; the workspace title becomes the topic alias in the paper tree.
+- **Honest fallbacks**: no reliable box means a page jump with an explicit “page only” notice; no fake coordinates.
 
-## 工作方式
+## How it works
 
 ```text
 PDF
- ├─ 文本层 ─────────────┐
- ├─ OCR（可选）─────────┤
- └─ 表格/图版面检测 ────┤
-                       ▼
-              证据索引：id / page / text / bbox
-                       │
-用户提问 ──► 模型检索证据 ──► 带 page + ev 的引用 URL
-                       │
-                       ▼
-              阅读器跳页 + 按 bbox 画框
-                       │
-                       ▼
-              答案下方「查证过程」
+ ├─ text layer ───────────┐
+ ├─ OCR (optional) ───────┤
+ └─ table/figure layout ──┤
+                         ▼
+              evidence index: id / page / text / bbox
+                         │
+question ──► model retrieves evidence ──► citation URL with page + ev
+                         │
+                         ▼
+              reader jumps and draws the box
+                         │
+                         ▼
+              verification trail under the answer
 ```
 
-模型不计算坐标，也不画框。它只负责从工具结果里选择证据、复制带 `page` 和 `ev` 的链接；坐标查询和画框由插件完成。
+The model does not compute coordinates or draw boxes. It selects evidence from tool results and copies the `page` + `ev` URL; the plugin resolves the box and renders it.
 
-## 安装
+## Install
 
-### 从源码
+### From source
 
 ```bash
 git clone https://github.com/Raymond2967/dsh-paper-reader-evidence.git
@@ -71,81 +75,81 @@ pnpm run build
 dsh plugin --profile web add .
 ```
 
-### 从本地包
+### From a local package
 
 ```bash
 dsh plugin --profile web add /path/to/dsh-paper-reader-evidence
 ```
 
-桌面端也可以在「插件 → 添加插件」中安装打包后的 `.tgz`。
+The desktop app can also install a packed `.tgz` through its plugin manager.
 
-### 从 npm（发布后）
+### From npm (after release)
 
 ```bash
 dsh plugin --profile web add dsh-paper-reader-evidence
 ```
 
-## 使用
+## Use
 
-1. 侧栏底部打开 **📚 论文伴读**。
-2. 新建专题并上传 PDF，或把 PDF 放到 `<dataDir>/<专题>/<文献名>/<文献名>.pdf`。
-3. 点论文打开阅读器，在右侧原生对话里提问。
-4. 点击答案中的证据链接：阅读器跳页并框选；缩放后框仍对齐。
-5. 展开答案底部的「查过 P…，取回…条证据，最终引用…处」。
+1. Open **📚 Paper Reader** at the bottom of the sidebar.
+2. Create a topic and upload a PDF, or place it at `<dataDir>/<topic>/<name>/<name>.pdf`.
+3. Open the paper and ask in the native chat on the right.
+4. Click an evidence link: the reader jumps and boxes the source; the box stays aligned after zoom.
+5. Expand the summary under the answer: “scanned pages, returned evidence, final citations”.
 
-示例问题：
+Example questions:
 
 ```text
-这篇论文的核心贡献是什么？
-Table 3 的实验结果说明了什么？
-Figure 2 的趋势怎么解释？
-作者为什么认为 Keep 策略不够？
-这篇论文和同类方法的关键区别是什么？
+What is the paper's main contribution?
+What does the experiment in Table 3 show?
+How should I interpret the trend in Figure 2?
+Why do the authors consider Keep insufficient?
+How does this paper differ from prior work?
 ```
 
-问整张表/整幅图时，模型会优先引用整块证据；只问单个数值时，引用行级/单元格证据。
+For whole-table/whole-figure questions the model prefers object-level evidence; for a single number it uses line/cell evidence.
 
-## 环境与依赖
+## Requirements
 
-- DeepSeek Harness `0.2.x`（当前验证 `0.2.2-rc.1`）
-- Node.js `^22.19.0 || >=24`（由 Harness 提供）
-- 普通文本层 PDF：开箱即用
-- **OCR 标签**：Windows + 简体中文 OCR 语言包
-- **坐标索引**：Python 3.11+ 与 `pymupdf`
+- DeepSeek Harness `0.2.x` (verified on `0.2.2-rc.1`)
+- Node.js `^22.19.0 || >=24` (provided by Harness)
+- Plain text-layer PDFs work out of the box
+- **OCR labels**: Windows + Simplified Chinese OCR language pack
+- **Coordinate index**: Python 3.11+ with `pymupdf`
 
-缺少 OCR/Python 时，阅读器仍可转录、检索和按页跳转，但图片上的标签只能「仅定位到页」。
+Without OCR/Python the reader still transcribes, searches, and jumps by page; labels baked into images fall back to “page only”.
 
-## 数据与隐私
+## Data and privacy
 
-- 文献库默认 `~/.dsh-paper-reader/data`
-- 证据索引：`<文献>.evidence.json`
-- OCR 页图缓存：`.evidence-cache/`
-- 工具审计：`<dataDir>/.paper-reader/audit/<sessionId>.jsonl`
-- OCR、版面检测和索引全部在本机完成；插件不会上传 PDF。
+- Library: `~/.dsh-paper-reader/data`
+- Evidence index: `<paper>.evidence.json`
+- OCR page cache: `.evidence-cache/`
+- Audit ledger: `<dataDir>/.paper-reader/audit/<sessionId>.jsonl`
+- OCR, layout detection, and indexing are local; the plugin does not upload PDFs.
 
-## 配置
+## Configuration
 
-在 profile 的 `cordis.patch.yml` 中可以设置：
+In the profile's `cordis.patch.yml`:
 
 ```yaml
 - id: dsh-paper-reader-evidence
   name: dsh-paper-reader-evidence
   config:
     dataDir: 'D:\papers'
-    # topic（默认）= 一个专题一个工作区；paper = 旧的一篇论文一个工作区
+    # topic (default) = one workspace per topic; paper = one workspace per paper
     workspaceScope: topic
 ```
 
-## 已知边界
+## Known limits
 
-- 普通证据以**行级/标签级**为主；跨行句子只框命中那一行。
-- 整表/整图依赖 PDF 版面和 `Table N:` / `Figure N:` 标题；无边框表、无图注的图可能退化为行级证据。
-- 多页表通常只框当前页。
-- OCR 依赖 Windows 简体中文语言包。
-- 查证过程只记录本插件 PDF 工具，不记录模型内部思考或其他工具。
-- 没有工具调用的回答不会显示过程面板。
+- Evidence is primarily line/label level; a wrapped sentence only boxes the matching line.
+- Whole-table/whole-figure detection depends on PDF layout and `Table N:` / `Figure N:` captions; borderless tables and uncaptioned figures may fall back to line evidence.
+- Multi-page tables usually box only the current page.
+- OCR requires Windows and the Simplified Chinese language pack.
+- Verification records only this plugin's PDF tools, not internal model reasoning or other tools.
+- Answers that use no PDF tools show no verification panel.
 
-## 开发
+## Development
 
 ```bash
 pnpm install
@@ -153,8 +157,9 @@ pnpm run typecheck
 pnpm run build
 ```
 
-`src/` 是 TypeScript 源码；`lib/`、`reader/`、`runtime/` 是运行时静态资源。构建后重启 Harness profile 生效。
+`src/` is TypeScript; `lib/`, `reader/`, and `runtime/` are runtime assets. Rebuild and restart the Harness profile after changes.
 
 ## License
 
-MIT。原始项目版权归 GGboya；本扩展的修改部分归 Raymond。详见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+MIT. Upstream copyright GGboya; modifications copyright Raymond. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
