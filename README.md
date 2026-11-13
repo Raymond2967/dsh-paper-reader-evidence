@@ -47,7 +47,7 @@ A page number still makes the reader hunt for the right table header or sentence
   <img src="assets/how-it-works.svg" alt="PDF sources become an evidence index; the model cites it; the reader draws the box" width="100%"/>
 </p>
 
-The model chooses which evidence to cite. The plugin resolves the page and draws the box. No coordinates are guessed by the model.
+The model chooses which evidence to cite. The plugin resolves the page, draws the box, and records the same tool calls in the verification panel. No coordinates are guessed by the model.
 
 ## Install
 
