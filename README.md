@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml/badge.svg"/></a>
-  <a href="https://github.com/Raymond2967/dsh-paper-reader-evidence/releases/tag/v1.1.4"><img alt="release 1.1.4" src="https://img.shields.io/badge/release-1.1.4-0f766e"/></a>
+  <a href="https://www.npmjs.com/package/dsh-paper-reader-evidence"><img alt="npm 1.1.5" src="https://img.shields.io/npm/v/dsh-paper-reader-evidence.svg"/></a>
   <a href="https://github.com/deepseek-ai/deepseek-harness"><img alt="DeepSeek Harness 0.2.x" src="https://img.shields.io/badge/DeepSeek%20Harness-0.2.x-1d4ed8"/></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-64748b"/></a>
 </p>
@@ -51,13 +51,13 @@ The model chooses which evidence to cite. The plugin resolves the page, draws th
 
 ## Install
 
-### DeepSeek Harness Desktop (after the npm release)
+### DeepSeek Harness Desktop (recommended)
 
 1. Open **Plugins → Add plugin**.
 2. Paste `dsh-paper-reader-evidence`.
 3. Enable it and restart Harness.
 
-No clone, no build. The npm package is not published yet; until then use the local option below.
+No clone, no build. The package is published on npm; the plugin manager installs it by name.
 
 ### CLI
 
@@ -65,7 +65,7 @@ No clone, no build. The npm package is not published yet; until then use the loc
 dsh plugin --profile web add dsh-paper-reader-evidence
 ```
 
-### From this repository (works today)
+### From source (developers)
 
 <details>
 <summary>Build from source (developers)</summary>

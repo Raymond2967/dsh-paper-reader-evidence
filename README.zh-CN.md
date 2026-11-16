@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Raymond2967/dsh-paper-reader-evidence/actions/workflows/ci.yml/badge.svg"/></a>
-  <a href="https://github.com/Raymond2967/dsh-paper-reader-evidence/releases/tag/v1.1.4"><img alt="release 1.1.4" src="https://img.shields.io/badge/release-1.1.4-0f766e"/></a>
+  <a href="https://www.npmjs.com/package/dsh-paper-reader-evidence"><img alt="npm 1.1.5" src="https://img.shields.io/npm/v/dsh-paper-reader-evidence.svg"/></a>
   <a href="https://github.com/deepseek-ai/deepseek-harness"><img alt="DeepSeek Harness 0.2.x" src="https://img.shields.io/badge/DeepSeek%20Harness-0.2.x-1d4ed8"/></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-64748b"/></a>
 </p>
@@ -51,13 +51,13 @@
 
 ## 安装
 
-### DeepSeek Harness 桌面端（npm 发布后）
+### DeepSeek Harness 桌面端（推荐）
 
 1. 打开 **插件 → 添加插件**。
 2. 粘贴 `dsh-paper-reader-evidence`。
 3. 启用并重启 Harness。
 
-不用克隆、不用构建。npm 包目前还没发布；在那之前用下面的本地方式。
+不用克隆、不用构建。包已发布到 npm，插件管理器会按包名安装。
 
 ### 命令行
 
@@ -65,7 +65,7 @@
 dsh plugin --profile web add dsh-paper-reader-evidence
 ```
 
-### 从当前仓库安装（现在可用）
+### 从源码构建（开发者）
 
 <details>
 <summary>从源码构建（开发者）</summary>

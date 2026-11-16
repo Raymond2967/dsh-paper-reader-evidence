@@ -1,6 +1,6 @@
 {
   "name": "dsh-paper-reader-evidence",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "DeepSeek Harness 插件：论文伴读工作台 + 可点击回原文框选的证据引用 + 可展开查证过程。基于 @ggboy123/dsh-paper-reader v1.12.0（MIT）扩展。",
   "license": "MIT",
   "type": "module",
