@@ -1,4 +1,4 @@
-﻿// evidence.ts — page/line evidence index for the reader bridge.
+// evidence.ts — page/line evidence index for the reader bridge.
 //
 // Coordinates are stored normalized to the rendered page (0..1), so a box
 // stays aligned at every zoom level.  Text-layer geometry comes from PyMuPDF;

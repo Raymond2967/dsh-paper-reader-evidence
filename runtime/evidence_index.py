@@ -1,4 +1,4 @@
-﻿"""Build a page/line evidence index for a PDF.
+"""Build a page/line evidence index for a PDF.
 
 Text-layer geometry comes from PyMuPDF; raster-only labels come from Windows
 OCR (`windows-ocr.ps1`).  The output is deliberately a plain JSON file: the
